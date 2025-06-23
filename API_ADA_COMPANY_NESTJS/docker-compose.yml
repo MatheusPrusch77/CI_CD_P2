@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  database:
+    # Builda a imagem do DB a partir do Dockerfile em database/postgres
+    build:
+      context: ./database/postgres
+    container_name: ada-postgres-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: seu_usuario_db # Substitua pelo usuário do seu DB
+      POSTGRES_PASSWORD: sua_senha_db # Substitua pela senha do seu DB
+      POSTGRES_DB: seu_nome_do_banco # Substitua pelo nome do seu DB
+    volumes:
+      - db_data:/var/lib/postgresql/data # Persiste os dados do banco de dados
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ada_network
+
+  backend:
+    # Builda a imagem do backend a partir do Dockerfile em API_NEST/API_ADA_COMPANY_NESTJS
+    build:
+      context: ./API_NEST/API_ADA_COMPANY_NESTJS
+    container_name: ada-backend-app
+    ports:
+      - "3000:3000"
+    environment:
+      # Use o nome do serviço 'database' para conectar ao DB no Docker Compose
+      DATABASE_URL: "postgresql://seu_usuario_db:sua_senha_db@database:5432/seu_nome_do_banco"
+      # Outras variáveis de ambiente do backend, se houver
+    depends_on:
+      database:
+        condition: service_healthy # Garante que o DB esteja saudável antes de iniciar o backend
+    networks:
+      - ada_network
+
+  frontend:
+    image: sua_username_docker/ada-company-frontend:latest
+    ports:
+      - "80:80"
+    environment:
+      # O frontend precisará do URL do backend, use o nome do serviço 'backend'
+      REACT_APP_BACKEND_URL: "http://backend:3000"
+    depends_on:
+      - backend
+    networks:
+      - ada_network
+
+volumes:
+  db_data: # Define o volume para persistência dos dados do DB
+
+networks:
+  ada_network:
+    driver: bridge # Define uma rede customizada para os serviços se comunicarem
