@@ -43,6 +43,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/api_ada_company_nestjs:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/api_ada_company_nestjs:${{ env.VERSION }},${{ secrets.DOCKERHUB_USERNAME }}/api_ada_company_nestjs:latest
 
       # Adicione steps para deploy no Render, atualização de secrets, etc.
