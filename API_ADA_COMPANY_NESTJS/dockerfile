@@ -1,31 +1,24 @@
 # Etapa 1: build
-FROM node:20-alpine AS builder
+FROM node:20 AS builder
 
 WORKDIR /app
 
-# Copia os arquivos do projeto
 COPY package*.json ./
 COPY tsconfig*.json ./
 COPY . .
 
-# Instala as dependências
 RUN npm install
-
-# Compila o projeto
 RUN npm run build
 
 # Etapa 2: imagem final
-FROM node:20-alpine
+FROM node:20
 
 WORKDIR /app
 
-# Copia apenas o que é necessário da imagem de build
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/dist/src ./dist
+COPY package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
 
-# Expõe a porta (ajuste se necessário)
 EXPOSE 3000
 
-# Comando para iniciar a aplicação
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]
