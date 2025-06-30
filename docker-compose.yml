@@ -3,22 +3,22 @@ version: '3.8'
 services:
   # Banco de dados PostgreSQL
   postgres:
-    image: postgres:15
-    container_name: tarefas-postgres
+    image: matheusprusch09/dockerpostgres:latest
+    container_name: ada-company-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: tarefas_db
-      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 9uGrBlyB8CAOwduki4cSmfg35Cd4uPqh
+      POSTGRES_DB: ada_company
+      POSTGRES_USER: ada_company_user
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - tarefas-network
+      - ada-company-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ada_company_user"]
       timeout: 20s
       retries: 10
 
@@ -27,25 +27,28 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: tarefas-backend
+    container_name: ada-company-backend
     restart: unless-stopped
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - PORT=3000
+      - RENDER=false
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=password
-      - DB_NAME=tarefas_db
+      - DB_USER=ada_company_user
+      - DB_PASSWORD=9uGrBlyB8CAOwduki4cSmfg35Cd4uPqh
+      - DB_NAME=ada_company
       - DB_SSL=false
-      - BETTERSTACK_SOURCE_TOKEN=${BETTERSTACK_SOURCE_TOKEN}
+      - BETTERSTACK_SOURCE_TOKEN=Hguw6n1Hmo6V8cA2EVC2Fqkh
+      - DOCKER_USERNAME=matheusprusch09
+      - DOCKER_PASSWORD=Seunome123
     ports:
       - "3000:3000"
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - tarefas-network
+      - ada-company-network
     healthcheck:
       test: ["CMD", "node", "healthcheck.js"]
       interval: 30s
@@ -58,5 +61,5 @@ volumes:
     driver: local
 
 networks:
-  tarefas-network:
+  ada-company-network:
     driver: bridge 
